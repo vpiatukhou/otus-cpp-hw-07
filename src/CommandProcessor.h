@@ -6,17 +6,17 @@
 
 namespace Homework {
 
-	class CommandProcessor {
+class CommandProcessor {
 
-	public:
-		CommandProcessor(std::size_t blockSize_) : blockSize(blockSize_) {
-		}
+public:
+    CommandProcessor(std::size_t blockSize_);
 
-		void process(const std::string& command);
+    void process(const std::string& command);
 
-	private:
-		std::size_t blockSize;
-		std::vector<std::string> commandBlock;
-	};
+private:
+    std::size_t blockSize;
+    std::vector<std::string> commandBlock;
+    size_t beginBlockCommandCounter = 0;
+};
 
 };
