@@ -1,37 +1,41 @@
 #include "CommandProcessor.h"
 #include "CommandWriter.h"
-
 #include <stdexcept>
+
+namespace Homework {
 
 const std::string BEGIN_DYNAMIC_BLOCK_COMMAND = "{";
 const std::string END_DYNAMIC_BLOCK_COMMAND = "}";
 
-Homework::CommandProcessor::CommandProcessor(std::size_t blockSize_) : blockSize(blockSize_) {
+CommandProcessor::CommandProcessor(std::size_t blockSize_) : blockSize(blockSize_) {
     if (blockSize_ == 0) {
         throw std::invalid_argument("Block size must be greater than 0.");
     }
     commandBlock.reserve(blockSize_);
 }
 
-void Homework::CommandProcessor::process(const std::string& command) {
+void CommandProcessor::process(const std::string& command) {
     if (command == BEGIN_DYNAMIC_BLOCK_COMMAND) {
-        if (beginBlockCommandCounter == 0) { 
-            //begin dynamic block => write previous block
+        if (beginBlockCounter == 0) { //if not zero, it is a nested block => the command is ignored
+            //begin a new dynamic block => write previous block
             writeCommands(commandBlock);
             commandBlock.clear();
         }
-        ++beginBlockCommandCounter;
+        ++beginBlockCounter;
     } else if (command == END_DYNAMIC_BLOCK_COMMAND) {
-        --beginBlockCommandCounter;
-        if (beginBlockCommandCounter == 0) {
+        --beginBlockCounter;
+        if (beginBlockCounter == 0) {
+            //end the dynamic block => write it
             writeCommands(commandBlock);
             commandBlock.clear();
         }
     } else {
         commandBlock.push_back(command);
-        if (beginBlockCommandCounter == 0 && commandBlock.size() == blockSize) {
+        if (beginBlockCounter == 0 && commandBlock.size() == blockSize) {
             writeCommands(commandBlock);
             commandBlock.clear();
         }
     }
 }
+
+};

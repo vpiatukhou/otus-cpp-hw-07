@@ -16,7 +16,7 @@ public:
 private:
     std::size_t blockSize;
     std::vector<std::string> commandBlock;
-    size_t beginBlockCommandCounter = 0;
+    size_t beginBlockCounter = 0;
 };
 
 };
