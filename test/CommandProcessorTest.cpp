@@ -104,38 +104,43 @@ TEST(commandProcessorTest, nestedDynamicBlock) {
     commandProcessor.process("}");
 }
 
-TEST(commandProcessorTest, complexTest) {
+TEST(commandProcessorTest, complexCommandSequence) {
     //given
     CommandWriterMock commandWriter;
     CommandProcessor commandProcessor(commandWriter, BLOCK_SIZE);
 
     //expect
-    std::vector<std::string> block1 = { "cmd1", "cmd2" };
-    std::vector<std::string> block2 = { "cmd3", "cmd4" };
-    std::vector<std::string> block3 = { "cmd5", "cmd6", "cmd7", "cmd8", "cmd9" };
+    vector<string> block1 = { "cmd1", "cmd2", "cmd3"};
+    vector<string> block2 = { "cmd4", "cmd5" };
+    vector<string> block3 = { "cmd6", "cmd7" };
+    vector<string> block4 = { "cmd8", "cmd9", "cmd10", "cmd11", "cmd12" };
 
     EXPECT_CALL(commandWriter, write(block1));
     EXPECT_CALL(commandWriter, write(block2));
     EXPECT_CALL(commandWriter, write(block3));
+    EXPECT_CALL(commandWriter, write(block4));
 
     //when
     commandProcessor.process("cmd1");
     commandProcessor.process("cmd2");
-    commandProcessor.process("{");
     commandProcessor.process("cmd3");
     commandProcessor.process("cmd4");
-    commandProcessor.process("}");
-    commandProcessor.process("{");
     commandProcessor.process("cmd5");
-    commandProcessor.process("cmd6");
     commandProcessor.process("{");
+    commandProcessor.process("cmd6");
     commandProcessor.process("cmd7");
+    commandProcessor.process("}");
+    commandProcessor.process("{");
     commandProcessor.process("cmd8");
-    commandProcessor.process("}");
     commandProcessor.process("cmd9");
-    commandProcessor.process("}");
     commandProcessor.process("{");
     commandProcessor.process("cmd10");
     commandProcessor.process("cmd11");
+    commandProcessor.process("}");
+    commandProcessor.process("cmd12");
+    commandProcessor.process("}");
+    commandProcessor.process("{");
+    commandProcessor.process("cmd13");
+    commandProcessor.process("cmd14");
     commandProcessor.flush();
 }
