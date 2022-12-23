@@ -5,6 +5,14 @@
 
 namespace Homework {
 
-void writeCommands(const std::vector<std::string>& commands);
+class CommandWriter {
+public:
+    virtual ~CommandWriter() {
+    }
+
+    virtual void write(const std::vector<std::string>& commands) const {
+    }
+
+};
 
 };

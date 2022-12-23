@@ -9,3 +9,4 @@ set(PROJECT_VERSION 0.0.${PATCH_VERSION})
 project(bulk VERSION ${PROJECT_VERSION})
 
 add_subdirectory(src)
+add_subdirectory(test)

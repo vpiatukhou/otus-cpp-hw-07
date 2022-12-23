@@ -1,4 +1,5 @@
 ﻿#include "CommandProcessor.h"
+#include "CommandWriterImpl.h"
 #include <iostream>
 
 using namespace Homework;
@@ -12,13 +13,18 @@ int main(int argc, char** argv) {
         return -1;
     }
 
+    CommandWriterImpl commandWriter;
+
     try {
         std::size_t blockSize = std::stoi(argv[BLOCK_SIZE_PARAM_INDEX]);
-        CommandProcessor commandProcessor(blockSize);
+        CommandProcessor commandProcessor(commandWriter, blockSize);
         
         std::string command;
         while (std::getline(std::cin, command)) {
             commandProcessor.process(command);
+        }
+        if (std::cin.eof()) {
+            commandProcessor.flush();
         }
     } catch (const std::logic_error& e) {
         std::cerr << e.what() << std::endl;
