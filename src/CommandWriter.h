@@ -11,6 +11,7 @@ public:
     }
 
     virtual void write(const std::vector<std::string>& commands) const {
+        //the default implementation does nothing
     }
 
 };
