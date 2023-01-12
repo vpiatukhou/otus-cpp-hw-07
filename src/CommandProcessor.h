@@ -1,16 +1,18 @@
 #pragma once
 
-#include "CommandWriter.h"
+#include "FlushCommandListener.h"
+
 #include <cstddef>
 #include <string>
 #include <vector>
+#include <memory>
 
 namespace Homework {
 
 class CommandProcessor {
 
 public:
-    CommandProcessor(CommandWriter& commandWriter_, std::size_t blockSize_);
+    CommandProcessor(std::vector<std::shared_ptr<FlushCommandListener>>& flushListeners_, std::size_t blockSize_);
 
     void process(const std::string& command);
     void flush();
@@ -20,7 +22,7 @@ private:
     std::vector<std::string> commandBlock;
     size_t openedDynamicBlockCounter = 0;
 
-    CommandWriter& commandWriter;
+    std::vector<std::shared_ptr<FlushCommandListener>> flushListeners;
 };
 
 };

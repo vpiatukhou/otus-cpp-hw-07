@@ -1,4 +1,5 @@
 #include "CommandProcessor.h"
+
 #include "gmock/gmock.h"
 
 using namespace Homework;
@@ -7,24 +8,26 @@ using ::testing::_;
 
 const size_t BLOCK_SIZE = 3;
 
-class CommandWriterMock : public CommandWriter {
+class FlushCommandListenerMock : public FlushCommandListener {
 public:
-    MOCK_METHOD(void, write, (const vector<string>& commands), (const, override));
+    MOCK_METHOD(void, onFlush, (const vector<string>& commands), (override));
 };
 
 TEST(commandProcessorTest, staticCommandBlock) {
     //given
-    CommandWriterMock commandWriter;
-    CommandProcessor commandProcessor(commandWriter, BLOCK_SIZE);
+    auto commandListener = std::make_shared<FlushCommandListenerMock>();
+    std::vector<std::shared_ptr<FlushCommandListener>> listeners = { commandListener };
+
+    CommandProcessor commandProcessor(listeners, BLOCK_SIZE);
 
     vector<string> block1 = { "cmd1", "cmd2", "cmd3" };
     vector<string> block2 = { "cmd4", "cmd5", "cmd6" };
     vector<string> block3 = { "cmd7", "cmd8" };
 
     //expect
-    EXPECT_CALL(commandWriter, write(block1));
-    EXPECT_CALL(commandWriter, write(block2));
-    EXPECT_CALL(commandWriter, write(block3)).Times(0);
+    EXPECT_CALL(*commandListener, onFlush(block1));
+    EXPECT_CALL(*commandListener, onFlush(block2));
+    EXPECT_CALL(*commandListener, onFlush(block3)).Times(0);
 
     //when
     for (auto& command : block1) {
@@ -40,11 +43,13 @@ TEST(commandProcessorTest, staticCommandBlock) {
 
 TEST(commandProcessorTest, flushNoCommands) {
     //given
-    CommandWriterMock commandWriter;
-    CommandProcessor commandProcessor(commandWriter, BLOCK_SIZE);
+    auto commandListener = std::make_shared<FlushCommandListenerMock>();
+    std::vector<std::shared_ptr<FlushCommandListener>> listeners = { commandListener };
+
+    CommandProcessor commandProcessor(listeners, BLOCK_SIZE);
 
     //expect
-    EXPECT_CALL(commandWriter, write(_)).Times(0);
+    EXPECT_CALL(*commandListener, onFlush(_)).Times(0);
 
     //when
     commandProcessor.flush();
@@ -52,13 +57,15 @@ TEST(commandProcessorTest, flushNoCommands) {
 
 TEST(commandProcessorTest, flush) {
     //given
-    CommandWriterMock commandWriter;
-    CommandProcessor commandProcessor(commandWriter, BLOCK_SIZE);
+    auto commandListener = std::make_shared<FlushCommandListenerMock>();
+    std::vector<std::shared_ptr<FlushCommandListener>> listeners = { commandListener };
+
+    CommandProcessor commandProcessor(listeners, BLOCK_SIZE);
 
     vector<string> block = { "cmd1", "cmd2" };
 
     //expect
-    EXPECT_CALL(commandWriter, write(block));
+    EXPECT_CALL(*commandListener, onFlush(block));
 
     //when
     for (auto& command : block) {
@@ -69,11 +76,13 @@ TEST(commandProcessorTest, flush) {
 
 TEST(commandProcessorTest, flushOpenedDynamicBlock) {
     //given
-    CommandWriterMock commandWriter;
-    CommandProcessor commandProcessor(commandWriter, BLOCK_SIZE);
+    auto commandListener = std::make_shared<FlushCommandListenerMock>();
+    std::vector<std::shared_ptr<FlushCommandListener>> listeners = { commandListener };
+
+    CommandProcessor commandProcessor(listeners, BLOCK_SIZE);
 
     //expect
-    EXPECT_CALL(commandWriter, write(_)).Times(0);
+    EXPECT_CALL(*commandListener, onFlush(_)).Times(0);
 
     //when
     commandProcessor.process("{");
@@ -84,13 +93,15 @@ TEST(commandProcessorTest, flushOpenedDynamicBlock) {
 
 TEST(commandProcessorTest, nestedDynamicBlock) {
     //given
-    CommandWriterMock commandWriter;
-    CommandProcessor commandProcessor(commandWriter, BLOCK_SIZE);
+    auto commandListener = std::make_shared<FlushCommandListenerMock>();
+    std::vector<std::shared_ptr<FlushCommandListener>> listeners = { commandListener };
+
+    CommandProcessor commandProcessor(listeners, BLOCK_SIZE);
 
     //expect
     vector<string> block = { "cmd1", "cmd2", "cmd3", "cmd4", "cmd5" };
 
-    EXPECT_CALL(commandWriter, write(block));
+    EXPECT_CALL(*commandListener, onFlush(block));
 
     //when
     commandProcessor.process("{");
@@ -106,8 +117,10 @@ TEST(commandProcessorTest, nestedDynamicBlock) {
 
 TEST(commandProcessorTest, complexCommandSequence) {
     //given
-    CommandWriterMock commandWriter;
-    CommandProcessor commandProcessor(commandWriter, BLOCK_SIZE);
+    auto commandListener = std::make_shared<FlushCommandListenerMock>();
+    std::vector<std::shared_ptr<FlushCommandListener>> listeners = { commandListener };
+
+    CommandProcessor commandProcessor(listeners, BLOCK_SIZE);
 
     //expect
     vector<string> block1 = { "cmd1", "cmd2", "cmd3"};
@@ -115,10 +128,10 @@ TEST(commandProcessorTest, complexCommandSequence) {
     vector<string> block3 = { "cmd6", "cmd7" };
     vector<string> block4 = { "cmd8", "cmd9", "cmd10", "cmd11", "cmd12" };
 
-    EXPECT_CALL(commandWriter, write(block1));
-    EXPECT_CALL(commandWriter, write(block2));
-    EXPECT_CALL(commandWriter, write(block3));
-    EXPECT_CALL(commandWriter, write(block4));
+    EXPECT_CALL(*commandListener, onFlush(block1));
+    EXPECT_CALL(*commandListener, onFlush(block2));
+    EXPECT_CALL(*commandListener, onFlush(block3));
+    EXPECT_CALL(*commandListener, onFlush(block4));
 
     //when
     commandProcessor.process("cmd1");

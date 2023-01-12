@@ -1,5 +1,5 @@
 #include "CommandProcessor.h"
-#include "CommandWriter.h"
+
 #include <stdexcept>
 
 namespace Homework {
@@ -7,7 +7,8 @@ namespace Homework {
 const std::string BEGIN_DYNAMIC_BLOCK_COMMAND = "{";
 const std::string END_DYNAMIC_BLOCK_COMMAND = "}";
 
-CommandProcessor::CommandProcessor(CommandWriter& commandWriter_, std::size_t blockSize_) : commandWriter(commandWriter_), blockSize(blockSize_) {
+CommandProcessor::CommandProcessor(std::vector<std::shared_ptr<FlushCommandListener>>& flushListeners_, std::size_t blockSize_) 
+    : flushListeners(flushListeners_), blockSize(blockSize_) {
     if (blockSize_ == 0) {
         throw std::invalid_argument("Block size must be greater than 0.");
     }
@@ -32,7 +33,9 @@ void CommandProcessor::process(const std::string& command) {
 void CommandProcessor::flush() {
     //check if there is no an opened dynamic block
     if (openedDynamicBlockCounter == 0 && !commandBlock.empty()) {
-        commandWriter.write(commandBlock);
+        for (auto& listener : flushListeners) {
+            listener->onFlush(commandBlock);
+        }
         commandBlock.clear();
     }
 }

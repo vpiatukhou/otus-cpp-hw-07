@@ -1,5 +1,7 @@
 ﻿#include "CommandProcessor.h"
-#include "CommandWriterImpl.h"
+#include "ConsoleCommandWriter.h"
+#include "FileCommandWriter.h"
+
 #include <iostream>
 
 using namespace Homework;
@@ -13,11 +15,14 @@ int main(int argc, char** argv) {
         return -1;
     }
 
-    CommandWriterImpl commandWriter;
+    std::vector<std::shared_ptr<FlushCommandListener>> flushListeners = {
+        std::make_shared<ConsoleCommandWriter>(),
+        std::make_shared<FileCommandWriter>()
+    };
 
     try {
         std::size_t blockSize = std::stoi(argv[BLOCK_SIZE_PARAM_INDEX]);
-        CommandProcessor commandProcessor(commandWriter, blockSize);
+        CommandProcessor commandProcessor(flushListeners, blockSize);
         
         std::string command;
         while (std::getline(std::cin, command)) {
