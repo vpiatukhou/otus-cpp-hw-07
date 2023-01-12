@@ -157,3 +157,22 @@ TEST(commandProcessorTest, complexCommandSequence) {
     commandProcessor.process("cmd14");
     commandProcessor.flush();
 }
+
+TEST(commandProcessorTest, multipleCommandListeners) {
+    //given
+    auto commandListener1 = std::make_shared<FlushCommandListenerMock>();
+    auto commandListener2 = std::make_shared<FlushCommandListenerMock>();
+    std::vector<std::shared_ptr<FlushCommandListener>> listeners = { commandListener1, commandListener2 };
+
+    CommandProcessor commandProcessor(listeners, BLOCK_SIZE);
+
+    //expect
+    vector<string> block = { "cmd1" };
+
+    EXPECT_CALL(*commandListener1, onFlush(block));
+    EXPECT_CALL(*commandListener2, onFlush(block));
+
+    //when
+    commandProcessor.process("cmd1");
+    commandProcessor.flush();
+}
